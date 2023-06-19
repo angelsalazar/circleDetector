@@ -3,6 +3,7 @@ import { Outlet, Link } from 'react-router-dom'
 import Share from '../components/icons/Share';
 import Close from '../components/icons/Close';
 import TabNav from '../components/TabNav';
+import PlayerSummary from '../components/PlayerSummary';
 
 function Root() {
     return (
@@ -22,7 +23,14 @@ function Root() {
                     </div>
                 </div>
             </header>
-            <main className="w-full mx-auto px-4 max-w-screen-sm flex-1 pt-4">
+            <main className="w-full mx-auto px-4 max-w-screen-sm flex-1">
+                <div className="my-4">
+                    <PlayerSummary 
+                        name="John"
+                        score={500}
+                        rounds={3}
+                    />
+                </div>
                 <Outlet/>
             </main>
             <TabNav />

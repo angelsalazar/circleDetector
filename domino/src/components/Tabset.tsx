@@ -1,7 +1,7 @@
 import React, { ReactElement, useState } from 'react';
+import clsx from 'clsx';
 
 interface TabProps {
-    name: string,
     label: string,
     children: ReactElement | ReactElement[]
 }
@@ -20,10 +20,18 @@ function Tabset({ children }: TabsetProps) {
     const [activeTab, setActivateTab] = useState(0);
 
     return (
-        <div>
-            <ul>
-                {React.Children.map(children, (child) => {
-                    return (<li>{child.props.label}</li>)
+        <div className="space-y-4">
+            <ul className="flex">
+                {React.Children.map(children, (child, index) => {
+                    return (
+                        <li className="flex-1">
+                            <button 
+                                className={clsx('py-5 border-b w-full text-center', activeTab == index && 'border-slate-900 border-b-2 font-bold')} 
+                                onClick={() => setActivateTab(index)}>
+                                {child.props.label}
+                            </button>
+                        </li>    
+                    )
                 })}
             </ul>
             {children[activeTab]}
