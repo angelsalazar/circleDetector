@@ -1,36 +1,73 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 
 import Button from '../components/Button';
 import Input from '../components/Input';
-import Info from '../components/icons/Info';
 
 import logo from '../assets/Logo.svg';
+import { logIn } from '../api/auth/logIn';
+import { User } from '../api/auth/types';
+import { create } from '../api/board/create';
+
+interface FormElements extends HTMLFormControlsCollection {
+    username : HTMLInputElement
+}
+
+interface LoginFormElement extends HTMLFormElement {
+    readonly elements: FormElements
+}
 
 function Login() {
+    const [status, setStatus] = useState('idle');
+    const [error, setError] = useState<null | string>(null);
+    const { setUser } = useOutletContext<{ setUser: (user: User) => void }>();
+    const navigate = useNavigate();
+
+    async function handleSubmit(ev:React.FormEvent<LoginFormElement>) {
+        ev.preventDefault();
+        setStatus('loading');
+
+        try {
+            const user = await logIn(ev.currentTarget.elements.username.value);
+            const board = await create(Object.assign({}, user));
+            user.board = board;
+            localStorage.setItem('__user__', JSON.stringify(user));
+            setUser(user);
+            navigate('/');
+        } catch (ex) {
+            console.log(ex);
+            setError('Oops something went wrong');
+            setStatus('idle');
+        }
+    }
+
+
     return (
-        <div className="h-screen flex flex-col">
-            <header className="w-full text-slate-900">
-                <div className="px-4 mx-auto max-w-screen-sm">
-                    <div className="flex py-7">
-                        <p className="text-lg font-bold uppercase">domino</p>
-                        <div className="ml-auto">
-                            <Link to="/how-to-play">
-                                <Info className="w-8 h-8"/>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </header>
-            <main className="w-full mx-auto px-4 max-w-screen-sm flex-1">
+        <>
+            <div className="py-8">
                 <div className="flex justify-center items-center">
                     <img src={logo} className="rotate-[30deg]" />
                 </div>
-                <form className="space-y-4 mt-4">
-                    <Input label="Name" required/>
-                    <Button type="button">Start</Button>
+            </div>
+
+            <div className="space-y-4">
+                <h1 className="text-2xl font-semibold text-slate-900">Log in</h1>
+
+                {error && (
+                    <div className="bg-red-100 text-red-600 rounded-md p-4">
+                        <h3 className=" font-bold">Error</h3>
+                        <p>{error}</p>
+                    </div>
+                )}
+
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                    <Input label="Name" name="username" required/>
+                    <Button type="submit" disabled={status === 'loading'}>
+                        {status === 'idle' ? 'Start' : 'Starting...'}
+                    </Button>
                 </form>
-            </main>
-        </div>
+            </div>
+        </>
     );
 }
 
